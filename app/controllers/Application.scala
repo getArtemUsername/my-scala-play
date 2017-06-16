@@ -20,6 +20,10 @@ class Application(actorSystem: ActorSystem, sunService: SunService, weatherServi
     Ok(views.html.index())
   }
   
+  def login = Action {
+    Ok(views.html.login())
+  }
+  
   def data = Action.async { request =>
     implicit val timeout = Timeout(5, TimeUnit.SECONDS)
     val requestF = (actorSystem.actorSelection(StatsActor.path) ? StatsActor.GetStats).mapTo[Int]

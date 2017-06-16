@@ -5,6 +5,7 @@ import com.softwaremill.macwire._
 import controllers.{Assets, Application => ApplicationController}
 import filters.StatsFilter
 import play.api._
+import play.api.cache.EhCacheComponents
 import play.api.db.evolutions.{DynamicEvolutions, EvolutionsComponents}
 import play.api.db.{DBComponents, HikariCPComponents}
 import play.api.libs.ws.ahc.AhcWSComponents
@@ -12,7 +13,7 @@ import play.api.mvc.Filter
 import play.api.routing.Router
 import router.Routes
 import scalikejdbc.config.DBs
-import services.{SunService, WeatherService}
+import services.{AuthService, SunService, WeatherService}
 
 import scala.concurrent.Future
 
@@ -34,13 +35,15 @@ class AppApplicationLoader extends ApplicationLoader {
 }
 
 trait AppComponents extends BuiltInComponents with AhcWSComponents
-  with EvolutionsComponents with DBComponents with HikariCPComponents {
+  with EvolutionsComponents with DBComponents with HikariCPComponents
+  with EhCacheComponents {
   lazy val assets: Assets = wire[Assets]
   lazy val prefix: String = "/"
   lazy val router: Router = wire[Routes]
   lazy val applicationController: ApplicationController = wire[ApplicationController]
   lazy val sunService: SunService = wire[SunService]
   lazy val weatherService: WeatherService = wire[WeatherService]
+  lazy val authService: AuthService = new AuthService(defaultCacheApi)
   lazy val statsFilter: Filter = wire[StatsFilter]
   override lazy val httpFilters = Seq(statsFilter)
   lazy val statsActor = actorSystem.actorOf(Props(wire[StatsActor]), StatsActor.name)
